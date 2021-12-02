@@ -1,5 +1,7 @@
-file = open('./data/day01.txt')
+#!/usr/bin/env python3
+file = open('../data/day01.txt')
 lines = file.readlines()
+
 prev = None
 increases = 0
 a = None
