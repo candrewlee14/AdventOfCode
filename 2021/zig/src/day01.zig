@@ -3,7 +3,10 @@ const utils = @import("utils.zig");
 const readByWord = utils.readByWord;
 const print = std.debug.print;
 const ArrayList = std.ArrayList;
-const gpa = utils.gpa;
+const Alloc = std.mem.Allocator;
+
+var gpa_impl = std.heap.GeneralPurposeAllocator(.{}){};
+const gpa = &gpa_impl.allocator;
 
 /// Read stdin until no more input, bufSize is how many elements are in one window slice.
 /// Returns the total number of increases in adjacent window slice totals

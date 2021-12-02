@@ -127,6 +127,3 @@ pub fn readByWord(allocator: *std.mem.Allocator, file: anytype) ReadByWordIterat
     };
 }
 
-var gpa_impl = std.heap.GeneralPurposeAllocator(.{}){};
-/// General Purpose Allocator Pointer
-pub const gpa = &gpa_impl.allocator;
