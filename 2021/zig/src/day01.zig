@@ -1,48 +1,83 @@
 const std = @import("std");
-const utils = @import("utils.zig");
-const readByWord = utils.readByWord;
-const print = std.debug.print;
-const ArrayList = std.ArrayList;
-const Alloc = std.mem.Allocator;
+const Allocator = std.mem.Allocator;
+const List = std.ArrayList;
+const Map = std.AutoHashMap;
+const StrMap = std.StringHashMap;
+const BitSet = std.DynamicBitSet;
+const Str = []const u8;
 
-var gpa_impl = std.heap.GeneralPurposeAllocator(.{}){};
-const gpa = &gpa_impl.allocator;
+const util = @import("util.zig");
+const gpa = util.gpa;
 
-/// Read stdin until no more input, bufSize is how many elements are in one window slice.
-/// Returns the total number of increases in adjacent window slice totals
-pub fn sonarSweep(comptime bufSize: usize) !u32 {
-    var it = readByWord(gpa, std.io.getStdIn());
-    defer it.deinit();
-    // this will be our sliding window
-    var q = ArrayList(u32).init(gpa);
-    defer q.deinit();
+const data = @embedFile("../../data/day01.txt");
 
-    // try getting words until no more
-    var increases: u32 = 0;
-    var eo_cur_int = it.nextInt(u32);
-    while (try eo_cur_int) |cur_int| : (eo_cur_int = it.nextInt(u32)) {
-        if (q.items.len < bufSize) {
-            try q.append(cur_int);
-        } else {
-            // Shift off first element and append new
-            // This slides the window
-            var n = q.orderedRemove(0);
-            try q.append(cur_int);
-            // check if increase happened
-            if (cur_int > n) increases += 1;
-        }
+fn part1() !isize {
+  var it = split(u8, data, "\n");
+  var prev_num : isize = -1;
+  var inc_count : isize = -1;
+  while (it.next()) |line| {
+    const num = parseInt(isize, line, 0) catch return inc_count;
+    if (num > prev_num) {
+      inc_count += 1;
     }
-    return increases;
+    prev_num = num;
+  }
+  return inc_count;
 }
 
-pub fn pt1() !void {
-    print("Result: {d}\n", .{try sonarSweep(1)});
-}
-
-pub fn pt2() !void {
-    print("Result: {d}\n", .{try sonarSweep(3)});
+fn part2() !usize {
+  var inc_count : usize = 0;
+  var it = util.NumLineIter(usize).init(data);
+  const win_size = 3;
+  var window_it = util.WindowIter(usize, win_size, util.NumLineIter(usize)).init(it) orelse unreachable;
+  var sum : usize = 0;
+  for (window_it.getWin()) |val| {
+    sum += val;
+  }
+  var prev_sum = sum;
+  var prev_num : usize = window_it.getWin()[0];
+  while (window_it.next()) |new_val| {
+    sum = sum + new_val - prev_num;
+    prev_num = window_it.getWin()[0];
+    if (sum > prev_sum) {
+      inc_count += 1;
+    }
+    prev_sum = sum;
+  }
+  return inc_count;
 }
 
 pub fn main() !void {
-    try pt2();
+  const p1 = part1();
+  print("Part 1: {d}\n", .{p1});
+  const p2 = part2();
+  print("Part 2: {d}\n", .{p2});
 }
+
+// Useful stdlib functions
+const tokenize = std.mem.tokenize;
+const split = std.mem.split;
+const indexOf = std.mem.indexOfScalar;
+const indexOfAny = std.mem.indexOfAny;
+const indexOfStr = std.mem.indexOfPosLinear;
+const lastIndexOf = std.mem.lastIndexOfScalar;
+const lastIndexOfAny = std.mem.lastIndexOfAny;
+const lastIndexOfStr = std.mem.lastIndexOfLinear;
+const trim = std.mem.trim;
+const sliceMin = std.mem.min;
+const sliceMax = std.mem.max;
+
+const parseInt = std.fmt.parseInt;
+const parseFloat = std.fmt.parseFloat;
+
+const min = std.math.min;
+const min3 = std.math.min3;
+const max = std.math.max;
+const max3 = std.math.max3;
+
+const print = std.debug.print;
+const assert = std.debug.assert;
+
+const sort = std.sort.sort;
+const asc = std.sort.asc;
+const desc = std.sort.desc;
